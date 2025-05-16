@@ -1,38 +1,210 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
+  <base href="/">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A new Flutter project.">
 
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="add_2_app_inner_flutter_module_njw">
+  <meta name="apple-mobile-web-app-title" content="my_flutter_add2app">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>add_2_app_inner_flutter_module_njw</title>
+  <title>Flutter Add-to-App POC</title>
   <link rel="manifest" href="manifest.json">
+
+  <style>
+    /* Basic reset and body styling for layout */
+    body {
+      display: flex;
+      flex-direction: column; /* Stack host and flutter content vertically */
+      min-height: 100vh; /* Ensure body takes at least full viewport height */
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #e8e8e8; /* Light background for the whole page */
+      box-sizing: border-box;
+    }
+
+    /* Styling for the host HTML content part */
+    .host-container {
+      padding: 20px;
+      text-align: center;
+      background-color: #f0f0f0;
+      border-bottom: 2px solid #ccc;
+      /* margin-bottom: 20px; /* Removed as flex will manage spacing */
+      flex-shrink: 0; /* Prevent this container from shrinking */
+    }
+    .host-container h1 {
+      color: #333;
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+    .host-container p {
+      color: #555;
+      margin-bottom: 15px;
+    }
+    .host-container input[type="text"] {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      margin-right: 10px;
+      width: 250px;
+      box-sizing: border-box;
+    }
+    .host-container button {
+      padding: 10px 15px;
+      border-radius: 5px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    .host-container button:hover {
+      background-color: #0056b3;
+    }
+    #hostStatus {
+      margin-top: 10px;
+      font-weight: bold;
+      min-height: 1.2em; /* Reserve space for status message */
+    }
+
+    /* Styling for the div that will host the Flutter application */
+    #flutter-target-element {
+      flex-grow: 1; /* Allow this div to take up remaining vertical space */
+      width: 100%;
+      /* min-height: 400px; /* Minimum height for the Flutter app */
+      border-top: 2px solid #007bff; /* Visual separator */
+      background-color: #ffffff; /* Background for the Flutter host area */
+      display: flex; /* To center the Flutter canvas if it's smaller */
+      justify-content: center;
+      align-items: center;
+      overflow: hidden; /* Ensure Flutter content doesn't break layout */
+      position: relative; /* Important for Flutter's internal canvas positioning */
+    }
+  </style>
+  <script src="flutter.js" defer></script>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+
+<div class="host-container">
+  <h1>Host HTML Page Section</h1>
+  <p>This form is part of the host HTML page. Enter a name and click the button.</p>
+  <input type="text" id="nameInput" placeholder="Enter your name here">
+  <button onclick="sendNameToFlutter()">Send Name to Flutter</button>
+  <p id="hostStatus" style="color: green;"></p>
+</div>
+<div id="flutter-target-element">
+  <p style="color: #999;">Loading Flutter Application...</p> </div>
+<script>
+  var serviceWorkerVersion = null;
+  var scriptLoaded = false;
+  function loadMainDartJs() {
+    if (scriptLoaded) {
+      return;
+    }
+    scriptLoaded = true;
+    var scriptTag = document.createElement('script');
+    scriptTag.src = 'main.dart.js'; // This is the compiled Flutter app
+    scriptTag.type = 'application/javascript';
+    document.body.append(scriptTag); // Appending to body is fine, Flutter will target its hostElement
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      var serviceWorkerUrl = 'flutter_service_worker.js?v=' + serviceWorkerVersion;
+      navigator.serviceWorker.register(serviceWorkerUrl)
+        .then((reg) => {
+          function waitForActivation(serviceWorker) {
+            serviceWorker.addEventListener('statechange', () => {
+              if (serviceWorker.state == 'activated') {
+                console.log('Installed new service worker.');
+                loadMainDartJs();
+              }
+            });
+          }
+          if (!reg.active && (reg.installing || reg.waiting)) {
+            waitForActivation(reg.installing ?? reg.waiting);
+          } else if (!reg.active.scriptURL.endsWith(serviceWorkerVersion)) {
+            console.log('New service worker available.');
+            reg.update().then(() => {
+              waitForActivation(reg.installing);
+            });
+          } else {
+            console.log('Loading app from service worker.');
+            loadMainDartJs();
+          }
+        });
+
+      setTimeout(() => {
+        if (!scriptLoaded) {
+          console.warn(
+            'Failed to load app from service worker. Falling back to plain <script> tag.',
+          );
+          loadMainDartJs();
+        }
+      }, 4000);
+    });
+  } else {
+    loadMainDartJs();
+  }
+
+  // Flutter Engine Initialization
+  window.addEventListener('load', function(ev) {
+    _flutter.loader.loadEntrypoint({
+      serviceWorker: {
+        serviceWorkerVersion: serviceWorkerVersion,
+      },
+      onEntrypointLoaded: async function(engineInitializer) {
+        let appRunner = await engineInitializer.initializeEngine({
+          // *** Key Change: Specify the hostElement for Flutter ***
+          hostElement: document.querySelector("#flutter-target-element")
+        });
+        // Remove placeholder text once Flutter is ready to run
+        const flutterHost = document.querySelector("#flutter-target-element");
+        if (flutterHost && flutterHost.firstChild && flutterHost.firstChild.nodeType === Node.TEXT_NODE) {
+           // A more robust way would be to remove a specific placeholder element by ID
+           const placeholder = flutterHost.querySelector("p");
+           if(placeholder) placeholder.remove();
+        }
+        appRunner.runApp();
+      }
+    });
+  });
+
+</script>
+
+<script>
+  function sendNameToFlutter() {
+    const nameInput = document.getElementById('nameInput');
+    const hostStatus = document.getElementById('hostStatus');
+    const name = nameInput.value.trim();
+
+    if (!name) {
+      hostStatus.textContent = 'Please enter a name.';
+      hostStatus.style.color = 'red';
+      setTimeout(() => { hostStatus.textContent = ''; }, 3000);
+      return;
+    }
+
+    if (window.myFlutterApp && typeof window.myFlutterApp.updateName === 'function') {
+      console.log('Host HTML: Sending name "' + name + '" to Flutter.');
+      window.myFlutterApp.updateName(name);
+      hostStatus.textContent = 'Sent "' + name + '" to Flutter!';
+      hostStatus.style.color = 'green';
+    } else {
+      console.error('Host HTML: Flutter app (window.myFlutterApp.updateName) not found or not ready.');
+      hostStatus.textContent = 'Error: Could not communicate with Flutter. Is it loaded?';
+      hostStatus.style.color = 'red';
+      setTimeout(() => { hostStatus.textContent = ''; }, 5000);
+    }
+  }
+</script>
 </body>
 </html>
