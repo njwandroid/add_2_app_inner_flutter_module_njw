@@ -161,9 +161,10 @@ GitHub Pages can host your static web application directly from your repository.
 
 ## 🎞️ Demo
 
-* **Watch the Video Demo:** [Link to Your Demo Video - e.g., YouTube, Vimeo] (Placeholder)
-* **See the Animated GIF:**
-    ![Demo GIF](link_to_your_demo.gif) (Placeholder - Add your GIF to the repo and link it)
+* **See the Animated GIF (Long, with code):**
+    ![Demo GIF](/asssets/js_interop_hello_world_long.gif) 
+* **See the Animated GIF (Short, App Only):**
+    ![Demo GIF](/asssets/js_interop_hello_world_app_only.gif) 
 
 ## 💡 Next Steps & Further Demo Ideas
 
