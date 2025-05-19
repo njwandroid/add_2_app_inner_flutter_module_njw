@@ -165,6 +165,8 @@ GitHub Pages can host your static web application directly from your repository.
     ![Demo GIF](/asssets/js_interop_hello_world_long.gif) 
 * **See the Animated GIF (Short, App Only):**
     ![Demo GIF](/asssets/js_interop_hello_world_app_only.gif) 
+* <img src="assets/js_interop_hello_world_app_only.gif" alt="Short animation" width="200" height="200">
+* <img src="assets/js_interop_hello_world_long.gif" alt="Animated demonstration of a Flutter web app embedded in a browser window. The user enters a name into a text field on the host HTML page and clicks a button. The Flutter app, displayed within a specific div, updates to show a personalized greeting with the entered name. The environment is a desktop browser with a clean, minimal interface. The tone is instructional and focused on showcasing interactive communication between the host page and the embedded Flutter app. Any visible code or UI labels are clearly shown as part of the demonstration." width="200" height="200">
 
 ## 💡 Next Steps & Further Demo Ideas
 
